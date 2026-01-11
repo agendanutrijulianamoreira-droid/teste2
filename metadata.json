@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Nutri.AI - Sales & Performance Hub",
+  "description": "Micro SaaS para nutricionistas com CRM de leads, simulador de ROI, gestão de faturamento e motor de copywriting Deep Copy com IA Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
