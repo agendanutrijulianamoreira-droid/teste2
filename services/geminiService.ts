@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
 import { MODELS } from "../constants";
@@ -33,7 +32,7 @@ export const PERSONAS = {
   // 4. FUNIS (O ESTRATEGISTA DE CRESCIMENTO)
   GROWTH_STRATEGIST: `
     ATUE COMO: Um Estrategista de Crescimento Patrimonial para Nutricionistas.
-    FUNÇÃO: Desenhar funis de vendas que escalam o faturamento.
+    FUNÇÃO: Desenhar funis de vendas que escalam o faturamento (Funis de Pesquisa, Aplicação, Presente).
     MENTALIDADE: "Light Business" (Trabalhar menos, ganhar mais através de processos inteligentes).
     OBJETIVO: Criar caminhos automáticos que transformam seguidores em clientes de High Ticket.
   `,
@@ -83,7 +82,7 @@ export const PERSONAS = {
 
 // --- CONFIGURAÇÃO ---
 const GENERATION_CONFIG = {
-  temperature: 0.7, // Reduzi levemente para ser menos criativo e mais estruturado no JSON
+  temperature: 0.7, 
   topP: 0.9,
   topK: 40,
 };
@@ -91,17 +90,10 @@ const GENERATION_CONFIG = {
 // --- HELPER: LIMPADOR DE JSON CIRÚRGICO ---
 function cleanJsonString(text: string): string {
   if (!text) return "{}";
-  
-  // 1. Remove blocos de código markdown
   let clean = text.replace(/```json\n/g, "").replace(/```json/g, "").replace(/\n```/g, "").replace(/```/g, "");
-  
-  // 2. Remove comentários JS que a IA as vezes insere
   clean = clean.replace(/\/\/.*$/gm, ""); 
-  
-  // 3. Extração Cirúrgica: Encontra o primeiro '{' ou '[' e o último '}' ou ']'
   const firstBrace = clean.indexOf('{');
   const firstBracket = clean.indexOf('[');
-  
   let startIndex = -1;
   if (firstBrace !== -1 && firstBracket !== -1) {
     startIndex = Math.min(firstBrace, firstBracket);
@@ -110,17 +102,14 @@ function cleanJsonString(text: string): string {
   } else if (firstBracket !== -1) {
     startIndex = firstBracket;
   }
-
   if (startIndex !== -1) {
     const lastBrace = clean.lastIndexOf('}');
     const lastBracket = clean.lastIndexOf(']');
     const endIndex = Math.max(lastBrace, lastBracket);
-    
     if (endIndex > startIndex) {
        clean = clean.substring(startIndex, endIndex + 1);
     }
   }
-  
   return clean.trim();
 }
 
@@ -141,23 +130,14 @@ const PostContentSchema = z.object({
 const ProductSchema = z.object({
   type: z.string(),
   name: z.string(),
-  // Robust price parser that handles numbers, "Free", "NaN", strings, and varied formats
   price: z.union([z.string(), z.number()]).transform((val) => {
-    if (typeof val === 'number') {
-        return isNaN(val) ? 0 : val;
-    }
+    if (typeof val === 'number') return isNaN(val) ? 0 : val;
     if (typeof val === 'string') {
         const lower = val.toLowerCase();
         if (lower.includes('free') || lower.includes('grat') || lower.includes('zero') || lower === 'nan') return 0;
-        
         let clean = val.replace(/[^0-9.,]/g, '').trim();
         if (clean === '') return 0;
-        
-        // Handle comma as decimal separator (e.g. 1.000,00)
-        if (clean.includes(',')) {
-             clean = clean.replace(/\./g, '').replace(',', '.');
-        }
-        
+        if (clean.includes(',')) clean = clean.replace(/\./g, '').replace(',', '.');
         const num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
     }
@@ -249,15 +229,6 @@ const MonthlyOrchestrationSchema = z.object({
   })).optional().default([])
 });
 
-const MaterialPageSchema = z.object({
-  type: z.string(),
-  title: z.coerce.string(),
-  content: z.coerce.string(),
-  imagePrompt: z.string().optional()
-});
-
-const MaterialContentSchema = z.array(MaterialPageSchema);
-
 const DistributionKitSchema = z.object({
   stories: z.array(z.string()),
   caption: z.string()
@@ -271,7 +242,7 @@ const getAIClient = () => {
 };
 
 // --- SYSTEM PROMPT BUILDER PARA POSTS (SOCIAL MEDIA MANAGER) ---
-const SOCIAL_MEDIA_CONTEXT = (profile: UserProfile, format: PostFormat = 'carousel', topic: string) => `
+const SOCIAL_MEDIA_CONTEXT = (profile: UserProfile, format: string = 'carousel', topic: string) => `
   ${PERSONAS.SOCIAL_MEDIA_MANAGER}
   
   CONTEXTO DA NUTRICIONISTA:
@@ -279,26 +250,32 @@ const SOCIAL_MEDIA_CONTEXT = (profile: UserProfile, format: PostFormat = 'carous
   - Especialidade: ${profile.specialty}
   - Mecanismo Único (Método): ${profile.uniqueMechanism}
   - Inimigo Comum (O vilão): ${profile.commonEnemy}
-  - Arquétipo: ${profile.archetype}
-  - Público Alvo: ${profile.targetAudience}
+  - Público Alvo (PPI): ${profile.targetAudience}
 
   FILOSOFIA "LIGHT BUSINESS":
   - Simplicidade e Intenção. Menos volume, mais conversão.
   - "Um conteúdo, um funil, uma oferta".
   - Fale com os 3 níveis de consciência: INCONFORMADOS, FRUSTRADOS, DESENVOLVIDOS.
 
+  VISUAL & FORMATO OBRIGATÓRIOS (${format}):
+  ${format === 'modern_tweet' ? 
+    'ESTILO TWITTER: Texto ultra-curto (max 280 chars por slide). Sem títulos complexos. Apenas a frase de impacto crua. Ex: "Você não tem falta de tempo. Você tem falta de prioridade."' : 
+    format === 'clinical_journal' ? 
+    'ESTILO MINIMALISTA: Texto elegante, curto e direto. Use fontes serifadas mentalmente. Poucas palavras por slide. Foco na tipografia.' :
+    'ESTILO CARROSSEL PADRÃO: Título forte, corpo explicativo.'
+  }
+
   REGRAS DE ESCRITA & CRIATIVIDADE (PLAYBOOK):
-  1. **O OLHAR DO ARTISTA:** Use metáforas e analogias (Ex: "O glúten inflama" -> "O glúten age como uma lixa na parede do seu intestino").
-  2. **ELEMENTOS NARRATIVOS:** Conflito, plot twist, ironia, experiência pessoal e imersão sensorial.
-  3. **O PÃO DA MEDITAÇÃO:** Misture técnica com vivência.
-  4. **TOM DE VOZ:** Autoral, firme e empático. Use vícios de linguagem oral ("Sabe?", "A verdade é que...").
+  1. **O OLHAR DO ARTISTA:** Use metáforas e analogias.
+  2. **ELEMENTOS NARRATIVOS:** Conflito, plot twist, ironia.
+  3. **TOM DE VOZ:** Autoral, firme e empático. Use vícios de linguagem oral.
   
   PROTOCOLO ANTI-ROBÔ (BANIDO):
   - 🚫 NUNCA comece com "Olá pessoal", "No post de hoje".
   - 🚫 NUNCA use linguagem acadêmica fria.
   - 🚫 NUNCA termine com "Gostou? Curte e compartilha". Use CTAs de conversão ("Comente X").
 
-  OBJETIVO (${format}):
+  OBJETIVO:
   - Tema: ${topic}
   - Ataque o Inimigo Comum.
   - Apresente o Mecanismo Único como a ÚNICA solução viável.
@@ -311,7 +288,7 @@ export const generateProductLadder = async (profile: UserProfile): Promise<any |
     const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODELS.text,
-      contents: `Construa o Império Digital para: Problema 90 Dias: ${profile.promise90Days}, Pilares: ${profile.uniqueMechanism}, Meta: R$ ${profile.financialGoal}.`,
+      contents: `Construa o Império Digital para: Problema 90 Dias: ${profile.promise90Days}, Pilares: ${profile.uniqueMechanism}, Meta: R$ ${profile.financialGoal}, Inimigo: ${profile.commonEnemy}, PPI: ${profile.targetAudience}.`,
       config: {
         ...GENERATION_CONFIG,
         // BRAND_ARCHITECT + GROWTH_STRATEGIST
@@ -322,12 +299,7 @@ export const generateProductLadder = async (profile: UserProfile): Promise<any |
 
     const cleanText = cleanJsonString(response?.text || "");
     let json = JSON.parse(cleanText);
-
-    // FIX: Se a IA retornar um array, pega o primeiro item para atender ao Schema (Object)
-    if (Array.isArray(json)) {
-        json = json[0] || {};
-    }
-
+    if (Array.isArray(json)) json = json[0] || {};
     return ProductLadderSchema.parse(json);
   } catch (e) {
     console.error("Erro generateProductLadder:", e);
@@ -348,7 +320,6 @@ export const generatePostContent = async (profile: UserProfile, strategy: Strate
     const json = JSON.parse(cleanText);
     const data = PostContentSchema.parse(json);
     
-    // Fallback logic preserved
     if ((!data.slides || data.slides.length === 0) && data.script) {
         return {
             title: data.title,
@@ -356,7 +327,6 @@ export const generatePostContent = async (profile: UserProfile, strategy: Strate
             slides: [{ text: data.script, imagePrompt: "Imagem ilustrativa" }]
         }
     }
-
     return data;
   } catch (error) { 
     console.error("Erro generatePostContent:", error);
@@ -374,7 +344,7 @@ export const generateMonthlyStrategyOrchestration = async (profile: UserProfile,
   try {
     const ai = getAIClient();
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview", // Modelo Pro para tarefas complexas
+      model: "gemini-3-pro-preview", 
       contents: `
         FOCO MENSAL: Vender o produto de entrada "${product1}" (Tripwire) e converter para o high-ticket "${product2}" (Mentoria).
         DADOS DA NUTRI:
@@ -385,12 +355,9 @@ export const generateMonthlyStrategyOrchestration = async (profile: UserProfile,
       `,
       config: { 
         temperature: 0.8, 
-        // COMMAND_CENTER (Maestro)
         systemInstruction: `
           ${PERSONAS.COMMAND_CENTER}
-          
           MISSÃO SECUNDÁRIA: Atue também como ${PERSONAS.GROWTH_STRATEGIST}.
-          
           TAREFA: Criar um Planejamento Orquestrado de 30 dias (Cronograma).
           RETORNO OBRIGATÓRIO (JSON) com digital_bait, feed_posts, stories, reels, vip_messages.
         `,
@@ -400,15 +367,10 @@ export const generateMonthlyStrategyOrchestration = async (profile: UserProfile,
     
     const jsonText = cleanJsonString(response?.text || "{}");
     let json = JSON.parse(jsonText);
-
-    if (Array.isArray(json)) {
-      json = json[0] || {};
-    }
+    if (Array.isArray(json)) json = json[0] || {};
     
     const result = MonthlyOrchestrationSchema.safeParse(json);
-    
     if (!result.success) {
-        console.warn("Aviso de validação MonthlyOrchestration (Recuperando dados parciais):", result.error);
         if (json.feed_posts && Array.isArray(json.feed_posts)) {
             return {
               digital_bait: json.digital_bait || { title: "Isca Digital", outline: "Conteúdo pendente" },
@@ -434,7 +396,6 @@ export const generateDistributionKit = async (profile: UserProfile, materialTitl
       model: MODELS.text,
       contents: `Gere um Kit de Distribuição (Stories + Feed) para a isca digital: ${materialTitle}.`,
       config: {
-        // SOCIAL_MEDIA_MANAGER
         systemInstruction: `${PERSONAS.SOCIAL_MEDIA_MANAGER}. Use a estratégia de "Conversão Direta". JSON: { stories: [3 scripts], caption: "legenda" }.`,
         responseMimeType: "application/json"
       }
@@ -487,27 +448,15 @@ export type NutriBrainType =
 export const generateStrategyResponse = async (profile: UserProfile, type: NutriBrainType, inputs: any): Promise<string> => {
   try {
     const ai = getAIClient();
-    
-    // ROTEAMENTO DE PERSONAS PARA ESTRATÉGIA
     let activePersona = PERSONAS.MENTOR_ORCHESTRATOR;
     switch(type) {
         case 'funnel_compass':
-        case 'ad_generator':
-            activePersona = PERSONAS.GROWTH_STRATEGIST;
-            break;
-        case 'objection_killer':
-            activePersona = PERSONAS.VIP_CLOSER;
-            break;
-        case 'monthly_audit':
-            activePersona = PERSONAS.CFO_STRATEGIST;
-            break;
-        case 'promise_refinery':
-            activePersona = PERSONAS.BRAND_ARCHITECT;
-            break;
+        case 'ad_generator': activePersona = PERSONAS.GROWTH_STRATEGIST; break;
+        case 'objection_killer': activePersona = PERSONAS.VIP_CLOSER; break;
+        case 'monthly_audit': activePersona = PERSONAS.CFO_STRATEGIST; break;
+        case 'promise_refinery': activePersona = PERSONAS.BRAND_ARCHITECT; break;
         case 'attraction_ideas':
-        case 'content_modeling':
-            activePersona = PERSONAS.SOCIAL_MEDIA_MANAGER;
-            break;
+        case 'content_modeling': activePersona = PERSONAS.SOCIAL_MEDIA_MANAGER; break;
     }
 
     const response = await ai.models.generateContent({
@@ -528,7 +477,6 @@ export const generateChallengeStructure = async (profile: UserProfile, config: a
       model: "gemini-3-pro-preview",
       contents: `Desafio: ${config.title}. Pilar: ${config.pillar}. Duração: ${config.duration} dias.`,
       config: { 
-        // CHALLENGE_COACH
         systemInstruction: `${PERSONAS.CHALLENGE_COACH}\n\nCrie a estrutura de um Desafio de Entrada (Tripwire). Foco em 'Pequenas Vitórias'. Retorne JSON com launch_strategy e daily_missions.`,
         responseMimeType: "application/json" 
       }
@@ -537,7 +485,6 @@ export const generateChallengeStructure = async (profile: UserProfile, config: a
     return ChallengeStructureSchema.parse(json);
   } catch (e) {
     console.error(e);
-    // Fallback básico para não travar
     return { launch_strategy: [], daily_missions: [] };
   }
 };
@@ -549,7 +496,6 @@ export const generateVipMessage = async (profile: UserProfile, config: VipMessag
       model: MODELS.text,
       contents: `Mensagem VIP WhatsApp. Ciclo: ${config.cycle}. Headline: ${config.headline}. Tema: ${config.topic}. Associação: ${config.association}.`,
       config: {
-          // VIP_CLOSER
           systemInstruction: `${PERSONAS.VIP_CLOSER}\n\nEscreva uma mensagem de texto para Lista VIP (WhatsApp). Tom íntimo, exclusivo, direto.`
       }
     });
@@ -564,7 +510,6 @@ export const generateVipStrategyBatch = async (profile: UserProfile): Promise<Vi
       model: "gemini-3-pro-preview",
       contents: `Gere um calendário de 8 Semanas para Lista VIP de WhatsApp. Alterne entre Conteúdo (Nutrição) e Oferta (Venda).`,
       config: { 
-          // VIP_CLOSER
           systemInstruction: `${PERSONAS.VIP_CLOSER}\n\nRetorne JSON.`,
           responseMimeType: "application/json" 
       }
@@ -581,35 +526,13 @@ export const generateVipStrategyBatch = async (profile: UserProfile): Promise<Vi
 export const generateMaterialContent = async (profile: UserProfile, type: MaterialType, title: string, promise: string, highTicketOffer?: string, acuteSymptom?: string): Promise<any[]> => {
   try {
     const ai = getAIClient();
-    
-    // System Prompt com MATERIAL_COPYWRITER e o Protocolo Definitivo
     const systemPrompt = `
       ${PERSONAS.MATERIAL_COPYWRITER}
-      
       MISSÃO: Criar uma "Amostra Grátis de Autoridade" (Isca Digital) que resolva um SINTOMA AGUDO para vender a solução da CAUSA RAIZ (Produto High Ticket).
-      
-      CONTEXTO:
-      - Nutricionista: ${profile.fullName}
-      - Especialidade: ${profile.specialty}
-      - Inimigo Comum: ${profile.commonEnemy}
-      - Mecanismo Único: ${profile.uniqueMechanism}
-      - Sintoma Agudo (Foco da Isca): ${acuteSymptom || 'Desconforto imediato'}
-      - Produto High Ticket (Oferta Final): ${highTicketOffer || 'Mentoria Premium'}
-
-      REGRA DE OURO:
-      - Não resolva o problema todo. Resolva o SINTOMA AGUDO. Gere uma PEQUENA VITÓRIA RÁPIDA.
-      - A isca deve ter no MÍNIMO 10 PÁGINAS.
-      - O formato deve ser visual, prático (checklists, tabelas, passos). Nada de textão acadêmico.
-
-      ANATOMIA OBRIGATÓRIA (Retorne um ARRAY JSON de páginas):
-      1. [type: 'cover'] CAPA MAGNÉTICA.
-      2. [type: 'intro'] CARTA DE BOAS-VINDAS (Conexão + Ataque ao Inimigo).
-      3-9. [type: 'content'] O CONTEÚDO PRÁTICO (O OURO - Dividido em várias páginas).
-      10. [type: 'content'] O GAP (A ARMADILHA - Resolveu sintoma, não causa).
-      11. [type: 'cover'] A OFERTA IRRESISTÍVEL (A PONTE para o High Ticket).
-
-      FORMATO JSON ESPERADO:
-      [ { "type": "cover", "title": "...", "content": "..." }, ... ]
+      CONTEXTO: ${profile.fullName}, ${profile.specialty}, Inimigo: ${profile.commonEnemy}, Mecanismo: ${profile.uniqueMechanism}, Sintoma: ${acuteSymptom}, High Ticket: ${highTicketOffer}.
+      REGRA DE OURO: Não resolva o problema todo. Resolva o SINTOMA AGUDO.
+      ANATOMIA: Capa, Boas Vindas, Conteúdo Prático, O Gap, Oferta Irresistível.
+      FORMATO: Array JSON de páginas.
     `;
 
     const response = await ai.models.generateContent({
@@ -623,21 +546,16 @@ export const generateMaterialContent = async (profile: UserProfile, type: Materi
     });
     
     const json = JSON.parse(cleanJsonString(response?.text || ""));
-    
     if (Array.isArray(json)) {
        return json;
     } else if (json.pages && Array.isArray(json.pages)) {
        return json.pages;
     } else {
-       return MaterialContentSchema.parse([json]); 
+       return [json]; 
     }
-
   } catch (e) {
     console.error("Erro generateMaterialContent:", e);
-    return [
-        { type: 'cover', title: title, content: promise },
-        { type: 'intro', title: 'Boas Vindas', content: 'Erro na geração automática. Edite manualmente.' }
-    ];
+    return [{ type: 'cover', title: title, content: promise }];
   }
 };
 
@@ -660,16 +578,13 @@ export const generatePostsFromBlueprint = async (
       Tom: ${audacity}.`,
       config: { 
         ...GENERATION_CONFIG, 
-        // GROWTH_STRATEGIST + SOCIAL_MEDIA_MANAGER
         systemInstruction: `${PERSONAS.GROWTH_STRATEGIST}\n\n${SOCIAL_MEDIA_CONTEXT(profile, format, title)}`, 
         responseMimeType: "application/json"
       }
     });
     
-    const MassPostsSchema = z.object({
-      posts: z.array(z.any())
-    });
     const json = JSON.parse(cleanJsonString(response?.text || ""));
+    const MassPostsSchema = z.object({ posts: z.array(z.any()) });
     return MassPostsSchema.parse(json);
   } catch (e) {
     console.error(e);

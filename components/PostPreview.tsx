@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrandSettings, UserProfile, CarouselSlide, PostFormat, PostTemplate } from '../types';
+import { Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 
 interface PostPreviewProps {
   profile: UserProfile;
@@ -33,157 +34,197 @@ const PostPreview: React.FC<PostPreviewProps> = ({
   const charCount = slide.text?.length || 0;
   
   // INTELLIGENT FONT SIZING (Auto-Adapt)
-  const getFontSizeClass = () => {
-    if (charCount < 50) return 'text-4xl sm:text-5xl leading-tight'; // Headline Mode
-    if (charCount < 100) return 'text-2xl sm:text-3xl leading-snug'; // Subheadline Mode
-    if (charCount > 200) return 'text-sm sm:text-base leading-relaxed'; // Body Mode
-    return 'text-lg sm:text-2xl leading-relaxed'; // Standard Mode
-  };
-
-  const getTitleSizeClass = () => {
-    return charCount < 30 ? 'text-5xl sm:text-6xl' : 'text-3xl sm:text-4xl';
+  const getFontSizeClass = (baseSize: 'sm' | 'md' | 'lg' = 'md') => {
+    if (baseSize === 'lg') {
+        if (charCount < 40) return 'text-5xl leading-tight';
+        if (charCount < 80) return 'text-3xl leading-snug';
+        return 'text-2xl leading-relaxed';
+    }
+    // Default Text
+    if (charCount < 50) return 'text-3xl leading-snug'; 
+    if (charCount < 100) return 'text-xl leading-relaxed'; 
+    return 'text-lg leading-relaxed'; 
   };
 
   const pagination = `${index + 1}/${totalSlides}`;
-  const handle = `@${profile.instagramHandle.toLowerCase()}`;
+  const handle = `@${profile.instagramHandle.toLowerCase().replace('@','')}`;
   const userPhotoPlaceholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=random&color=fff`;
   const userPhoto = (profile.personalPhotos && profile.personalPhotos.length > 0) ? profile.personalPhotos[0] : userPhotoPlaceholder;
 
-  // 1. Template: The Clinical Journal (Elegant / Serif)
+  // 1. Template: Minimalist (Baseado no modelo Canva Minimalista)
   if (templateVariant === 'clinical_journal') {
     return (
       <div 
-        className="relative w-full aspect-[4/5] overflow-hidden p-2 group shadow-inner transition-colors duration-500"
+        className="relative w-full aspect-[4/5] overflow-hidden flex flex-col"
         style={{ backgroundColor: brand.colorBackground }}
       >
-        {/* Borda Interna Inset */}
-        <div className="absolute inset-4 border opacity-30 pointer-events-none z-10" style={{ borderColor: brand.colorDetail }} />
-        
-        <div className="relative h-full flex flex-col p-8 sm:p-10 z-20">
-          <header className="flex justify-between items-start border-t-2 pt-4 mb-6 sm:mb-8" style={{ borderColor: brand.colorContrast }}>
-            <span className="font-black text-[8px] sm:text-[10px] tracking-[0.4em] uppercase" style={{ fontFamily: brand.fontBody, color: brand.colorContrast }}>
-              {profile.fullName}
-            </span>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-gray-200 overflow-hidden shrink-0 -mt-2">
-              <img src={userPhoto} alt="Nutri" className="w-full h-full object-cover" />
-            </div>
+        <div className="flex-1 flex flex-col p-8 sm:p-12 relative z-10">
+          {/* Header Minimalista */}
+          <header className="flex justify-between items-center mb-8 opacity-60">
+             <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: brand.colorText }}>{profile.specialty}</span>
+             <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: brand.colorText }}>{pagination}</span>
           </header>
 
           <main className="flex-1 flex flex-col justify-center">
             {index === 0 ? (
-              <h2 
-                className={`${getTitleSizeClass()} font-black mb-6 text-balance uppercase tracking-tight`} 
-                style={{ fontFamily: brand.fontTitle, color: brand.colorContrast }}
-              >
-                {slide.text}
-              </h2>
+              // Capa Minimalista
+              <div className="space-y-6">
+                 <div className="w-12 h-1 mb-6" style={{ backgroundColor: brand.colorPrimary }} />
+                 <h2 
+                  className="font-serif font-medium text-balance italic leading-[1.1] text-5xl sm:text-6xl"
+                  style={{ color: brand.colorText, fontFamily: brand.fontTitle }}
+                 >
+                   {slide.text}
+                 </h2>
+                 <p className="text-xs font-medium uppercase tracking-widest mt-4 opacity-70" style={{ color: brand.colorText }}>
+                    {profile.fullName}
+                 </p>
+              </div>
             ) : (
-              <p 
-                className={`${getFontSizeClass()} font-medium text-balance`} 
-                style={{ fontFamily: brand.fontBody, color: brand.colorContrast }}
-              >
-                {slide.text}
-              </p>
+              // Conteúdo Minimalista
+              <div className="space-y-6 h-full flex flex-col justify-center">
+                 <p 
+                   className={`${getFontSizeClass('lg')} font-serif text-balance font-medium`} 
+                   style={{ color: brand.colorText, fontFamily: brand.fontTitle }}
+                 >
+                   {slide.text}
+                 </p>
+              </div>
             )}
           </main>
 
-          <footer className="flex justify-between items-center mt-auto pt-6 border-t" style={{ borderColor: `${brand.colorContrast}20` }}>
-            <span className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: brand.colorContrast }}>{handle}</span>
-            <span className="text-[10px] font-black" style={{ color: brand.colorContrast }}>{pagination}</span>
+          <footer className="mt-auto pt-8 border-t border-black/5 flex justify-between items-end">
+             <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full overflow-hidden grayscale">
+                   <img src={userPhoto} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[9px] font-bold tracking-widest uppercase opacity-50" style={{ color: brand.colorText }}>{handle}</span>
+             </div>
+             {index === 0 && <div className="text-[30px] opacity-20" style={{ color: brand.colorPrimary }}>✦</div>}
           </footer>
         </div>
-
-        {slide.imageUrl && (
-          <div className="absolute inset-0 z-0">
-             <img src={slide.imageUrl} className="w-full h-full object-cover opacity-10 grayscale hover:grayscale-0 transition-all duration-700" alt="" />
-          </div>
-        )}
       </div>
     );
   }
 
-  // 2. Template: Modern Tweet (Clean / Pop / Card)
+  // 2. Template: Modern Tweet (Baseado no modelo Canva Twitter)
   if (templateVariant === 'modern_tweet') {
     return (
-      <div className="relative w-full aspect-[4/5] bg-slate-100 overflow-hidden flex items-center justify-center p-6 sm:p-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-200/50 via-transparent to-gray-300/30 pointer-events-none" />
-        
-        {/* Background Accent Blur */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] opacity-40" style={{ backgroundColor: brand.colorPrimary }} />
+      <div className="relative w-full aspect-[4/5] bg-gray-100 overflow-hidden flex items-center justify-center p-6">
+        {/* Fundo desfocado/textura */}
+        <div className="absolute inset-0 opacity-10 pattern-grid-lg" style={{ color: brand.colorPrimary }} />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white to-transparent opacity-50 blur-3xl" />
 
-        <div className="relative z-10 w-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[24px] sm:rounded-[32px] p-8 sm:p-10 flex flex-col gap-6">
-          <header className="flex items-center gap-3 sm:gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-white shadow-sm">
+        {/* Card do Tweet */}
+        <div className="relative w-full bg-white shadow-xl rounded-[24px] p-8 flex flex-col gap-6 border border-gray-100/50">
+          
+          {/* Header do Tweet */}
+          <header className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100">
               <img src={userPhoto} alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-black text-gray-900 leading-tight text-sm sm:text-base">{profile.fullName}</span>
-              <span className="text-gray-400 text-xs font-medium tracking-tight">@{profile.instagramHandle.toLowerCase()}</span>
+            <div className="flex flex-col leading-tight">
+              <div className="flex items-center gap-1.5">
+                 <span className="font-bold text-gray-900 text-sm truncate max-w-[140px]">{profile.fullName}</span>
+                 <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center text-[8px] text-white">✓</div>
+              </div>
+              <span className="text-gray-400 text-xs font-normal">{handle}</span>
+            </div>
+            <div className="ml-auto text-gray-300">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
             </div>
           </header>
 
-          <main className="flex-1 min-h-[100px] flex items-center">
-             <div className={`${getFontSizeClass()} font-bold text-gray-900 text-left text-balance`} style={{ fontFamily: 'Inter' }}>
-                {slide.text?.split(' ').map((word, i) => {
-                  const isHighlight = word.length > 5 && i % 3 === 0; // Smart highlight
-                  return (
-                    <span key={i} className={isHighlight ? 'px-1 rounded-sm' : ''} style={{ backgroundColor: isHighlight ? `${brand.colorPrimary}30` : 'transparent' }}>
-                      {word}{' '}
-                    </span>
-                  );
-                })}
-             </div>
+          {/* Corpo do Tweet */}
+          <main className="flex-1">
+             <p className={`${getFontSizeClass('md')} text-gray-800 font-medium leading-relaxed whitespace-pre-wrap`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                {slide.text}
+             </p>
+             {slide.imageUrl && (
+                <div className="mt-4 rounded-xl overflow-hidden border border-gray-100">
+                   <img src={slide.imageUrl} className="w-full h-auto object-cover max-h-48" />
+                </div>
+             )}
           </main>
 
-          <footer className="flex justify-between items-center text-gray-300 border-t border-gray-50 pt-4 sm:pt-6">
-             <div className="flex gap-4 text-gray-400 text-xs font-medium">
-               <span>{new Date().toLocaleDateString()}</span>
+          {/* Metadata & Footer */}
+          <footer className="space-y-4">
+             <div className="text-[11px] text-gray-400 font-medium border-b border-gray-50 pb-4">
+                {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} · {new Date().toLocaleDateString()} · <span className="text-blue-500 font-semibold">Twitter for iPhone</span>
              </div>
-             <span className="text-[12px] font-black text-gray-900 bg-gray-100 px-2 py-1 rounded-md">{pagination}</span>
+             
+             {/* Fake Engagement Metrics */}
+             <div className="flex justify-between items-center text-gray-500 px-2">
+                <div className="flex items-center gap-2 group cursor-pointer">
+                   <MessageCircle size={18} className="group-hover:text-blue-500 transition-colors" />
+                   <span className="text-xs font-bold">24</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-pointer">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-green-500 transition-colors"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                   <span className="text-xs font-bold">12</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-pointer">
+                   <Heart size={18} className="group-hover:text-red-500 transition-colors" />
+                   <span className="text-xs font-bold">148</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-pointer">
+                   <Bookmark size={18} className="group-hover:text-blue-500 transition-colors" />
+                   <span className="text-xs font-bold">42</span>
+                </div>
+             </div>
           </footer>
+        </div>
+        
+        {/* Pagination Pill */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full">
+           {pagination}
         </div>
       </div>
     );
   }
 
-  // 3. Template: Dark Aesthetic (Bold / High Contrast)
+  // 3. Template: Dark Aesthetic (High Contrast / Authority)
   if (templateVariant === 'dark_aesthetic') {
     return (
-      <div className="relative w-full aspect-[4/5] bg-black overflow-hidden group">
+      <div className="relative w-full aspect-[4/5] bg-[#0A0A0A] overflow-hidden group flex flex-col">
         {slide.imageUrl ? (
-          <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" />
+          <div className="absolute inset-0 opacity-40">
+             <img src={slide.imageUrl} alt="" className="w-full h-full object-cover grayscale mix-blend-overlay" />
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent" />
+          </div>
         ) : (
-          <div className="absolute inset-0 opacity-20" style={{ backgroundColor: brand.colorPrimary }} />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-b from-white/5 to-transparent rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
         )}
-
-        {/* Overlay Dramático */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
         
-        <div className="relative h-full z-20 flex flex-col p-10 sm:p-12 text-white">
-          <header className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="font-black text-[9px] tracking-[0.3em] uppercase opacity-90 text-emerald-400" style={{ color: brand.colorPrimary }}>{profile.fullName}</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-[10px] font-black border border-white/20">
-              {pagination}
+        <div className="relative h-full z-20 flex flex-col p-10 sm:p-12 text-white justify-between">
+          <header className="flex justify-between items-center border-b border-white/10 pb-6">
+            <span className="font-black text-[10px] tracking-[0.3em] uppercase text-white/50">{profile.fullName}</span>
+            <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[9px] font-bold bg-white/5">
+              {index + 1}
             </div>
           </header>
 
-          <main className="flex-1 flex flex-col items-center justify-center text-center px-2">
+          <main className="flex-1 flex flex-col justify-center py-8">
              <h2 
-               className={`${getTitleSizeClass()} font-black leading-[1.1] mb-4 text-balance drop-shadow-2xl`}
-               style={{ fontFamily: 'Inter' }}
+               className={`${getFontSizeClass('lg')} font-black leading-[1.1] text-balance tracking-tight`}
+               style={{ fontFamily: 'Inter', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
              >
                {slide.text}
              </h2>
-             <div className="w-12 h-1 rounded-full mt-6" style={{ backgroundColor: brand.colorPrimary }} />
+             {index === 0 && (
+                <div className="w-16 h-1 mt-8 bg-white" />
+             )}
           </main>
 
-          <footer className="mt-auto backdrop-blur-md bg-white/5 border border-white/10 p-5 rounded-2xl flex justify-between items-center shadow-xl">
-            <span className="text-[9px] font-black tracking-[0.2em] uppercase opacity-80 text-white">
+          <footer className="flex justify-between items-center">
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase opacity-40">
               {handle}
             </span>
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: brand.colorPrimary }} />
+            <div className="flex gap-1">
+               {Array.from({length: totalSlides}).map((_, i) => (
+                  <div key={i} className={`h-1 rounded-full transition-all ${i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/20'}`} />
+               ))}
+            </div>
           </footer>
         </div>
       </div>

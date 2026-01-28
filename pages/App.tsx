@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { UserProfile, BrandSettings, Post, Material, SavedStrategy, SavedFunnel, DailyTask, FunnelMetric, WeeklyReport, VipWeek, Sale, Challenge } from '../types';
 import Layout from '../components/Layout';
@@ -7,6 +6,7 @@ import Funnels from './Funnels';
 import BrandHub from './BrandHub';
 import BusinessLab from './BusinessLab';
 import Calendar from './Calendar';
+import CreationHub from './CreationHub'; // Import the new Creation Hub
 import LiveSupport from './LiveSupport';
 import FinancialGPS from './FinancialGPS';
 import MaterialsLibrary from './MaterialsLibrary';
@@ -36,6 +36,7 @@ const App: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [vipPlan, setVipPlan] = useState<VipWeek[]>([]); 
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [savedStrategies, setSavedStrategies] = useState<SavedStrategy[]>([]);
   
   const [savedFunnels, setSavedFunnels] = useState<SavedFunnel[]>([]);
   const [weeklyReports, setWeeklyReports] = useState<WeeklyReport[]>([]);
@@ -50,7 +51,6 @@ const App: React.FC = () => {
   const [showPerformanceWizard, setShowPerformanceWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [wizardData, setWizardData] = useState<Partial<FunnelMetric>>({ salesCount: 0, revenueGenerated: 0 });
-  const [savedStrategies, setSavedStrategies] = useState<SavedStrategy[]>([]); // Added missing state
   
   const [tasks, setTasks] = useState<DailyTask[]>([
     { id: 't1', label: 'Postar o Story de Autoridade', completed: false, category: 'content' },
@@ -59,6 +59,7 @@ const App: React.FC = () => {
   ]);
 
   const toggleTask = (id: string) => {
+    // FIX: Corrected duplicate and shorthand property error
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
 
@@ -233,13 +234,18 @@ const App: React.FC = () => {
     alert("✨ Ambiente configurado para Dra. Elena Ramos (Nicho Menopausa). Tudo pronto!");
   };
 
+  const handleCreationComplete = (newPosts: Post[]) => {
+    setPosts(prev => [...prev, ...newPosts]);
+    setActivePage('calendar');
+  };
+
   return (
     <Layout activePage={activePage} setActivePage={setActivePage}>
       {activePage === 'dashboard' && (
         <Dashboard 
-          onStartSmartPlanner={() => { setInitialShowSmartPlanner(true); setActivePage('calendar'); }}
+          onStartSmartPlanner={() => setActivePage('create')}
           onNavigateToCalendar={() => setActivePage('calendar')}
-          onOpenCreatePost={() => { setInitialShowCreate(true); setActivePage('calendar'); }}
+          onOpenCreatePost={() => setActivePage('create')}
           onOpenPerformanceWizard={() => openPerformanceWizard()}
           onNavigateToFunnels={() => setActivePage('funnels')}
           onNavigateToMaterials={() => setActivePage('materials')}
@@ -253,6 +259,12 @@ const App: React.FC = () => {
           challenges={challenges}
           setChallenges={setChallenges}
           metrics={metrics} profile={profile}
+        />
+      )}
+      {activePage === 'create' && (
+        <CreationHub
+          profile={profile}
+          onCreationComplete={handleCreationComplete}
         />
       )}
       {activePage === 'business-lab' && (
@@ -296,6 +308,7 @@ const App: React.FC = () => {
           metrics={metrics} weeklyReports={weeklyReports} onOpenPerformanceWizard={openPerformanceWizard}
           initialShowSmartPlanner={initialShowSmartPlanner} initialShowCreate={initialShowCreate}
           clearInitialTriggers={() => { setInitialShowSmartPlanner(false); setInitialShowCreate(false); }}
+          setActivePage={setActivePage}
         />
       )}
       {activePage === 'materials' && <MaterialsLibrary materials={materials} setMaterials={setMaterials} profile={profile} brand={brand} />}

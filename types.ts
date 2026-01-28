@@ -1,4 +1,3 @@
-
 export type Archetype = 
   | 'Mago' | 'Herói' | 'Amante' | 'Sábio' | 'Cuidador' | 'Governante' 
   | 'Criador' | 'Inocente' | 'Explorador' | 'Rebelde' | 'Comum' | 'Bobo da Corte';
@@ -14,6 +13,7 @@ export type StrategyType =
   | 'pesquisa_audiencia' 
   | 'recuperacao_vendas';
 
+export type DocType = 'Social' | 'Apresentação' | 'Documento' | 'Página da Web';
 export type PostFormat = 'carousel' | 'reels' | 'static' | 'stories' | 'script_whatsapp' | 'roteiro_stories';
 export type MaterialType = 'checklist' | 'guide' | 'recipe';
 export type LayoutVariant = 'classic' | 'bold' | 'editorial';

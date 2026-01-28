@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Calendar as CalendarIcon, Wand2, Plus, ArrowRight, Loader2, CheckCircle2, X, 
@@ -7,7 +6,7 @@ import {
   Monitor, Smartphone, Search, Upload, Palette, Type, Smartphone as MobileIcon,
   FileText, Wand, Grid, List, Shuffle
 } from 'lucide-react';
-import { STRATEGY_CONFIG, FORMAT_CONFIG, ELITE_GALLERY } from '../constants';
+import { STRATEGY_CONFIG, FORMAT_CONFIG } from '../constants';
 import { StrategyType, Post, UserProfile, BrandSettings, PostFormat, PostTemplate, WeeklyReport } from '../types';
 import { generatePostContent, generateImage } from '../services/geminiService';
 import PostPreview from '../components/PostPreview';
@@ -23,15 +22,15 @@ interface CalendarProps {
   initialShowSmartPlanner?: boolean;
   initialShowCreate?: boolean;
   clearInitialTriggers?: () => void;
+  setActivePage: (page: string) => void; // Added for navigation
 }
 
 const Calendar: React.FC<CalendarProps> = ({ 
   profile, brand, posts, setPosts, metrics, weeklyReports = [], onOpenPerformanceWizard, 
   initialShowSmartPlanner = false, initialShowCreate = false,
-  clearInitialTriggers
+  clearInitialTriggers,
+  setActivePage
 }) => {
-  const [showSmartPlannerModal, setShowSmartPlannerModal] = useState(initialShowSmartPlanner);
-  const [showCreateModal, setShowCreateModal] = useState(initialShowCreate);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   
@@ -41,16 +40,8 @@ const Calendar: React.FC<CalendarProps> = ({
   // View Modes
   const [viewMode, setViewMode] = useState<'calendar' | 'feed'>('calendar');
 
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isVisualMagicRunning, setIsVisualMagicRunning] = useState(false);
-  const [targetCellIndex, setTargetCellIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (initialShowSmartPlanner) setShowSmartPlannerModal(true);
-    if (initialShowCreate) { setShowCreateModal(true); }
-    if (clearInitialTriggers) clearInitialTriggers();
-  }, [initialShowSmartPlanner, initialShowCreate]);
 
   // Reset remix when opening new post
   useEffect(() => {
@@ -129,7 +120,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const userPhoto = (profile.personalPhotos && profile.personalPhotos.length > 0) ? profile.personalPhotos[0] : userPhotoPlaceholder;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-[1500px] mx-auto p-12 lg:p-16 space-y-8 animate-in fade-in duration-500 pb-20">
       <header className="flex justify-between items-center">
         <div><h2 className="text-3xl font-black text-gray-900 tracking-tight">Calendário Estratégico</h2></div>
         <div className="flex gap-4">
@@ -142,7 +133,7 @@ const Calendar: React.FC<CalendarProps> = ({
                  <Grid size={14} /> Feed Preview
               </button>
            </div>
-          <button onClick={() => setShowSmartPlannerModal(true)} className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 flex items-center gap-2 hover:bg-emerald-700 transition-all"><Wand2 size={16} /> Smart Planner ⚡</button>
+          <button onClick={() => setActivePage('create')} className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 flex items-center gap-2 hover:bg-emerald-700 transition-all"><Wand2 size={16} /> Smart Planner ⚡</button>
         </div>
       </header>
 
@@ -151,7 +142,7 @@ const Calendar: React.FC<CalendarProps> = ({
           {dates.map((d, i) => {
             const dayPosts = posts.filter(p => p.calendarIndex === i);
             return (
-              <div key={i} onClick={() => d > 0 && d <= 31 && (setTargetCellIndex(i), setShowCreateModal(true))} className={`min-h-[160px] p-4 border-r border-b group relative hover:bg-emerald-50/20 transition-all cursor-pointer ${d < 1 || d > 31 ? 'bg-gray-50/10' : 'bg-white'}`}>
+              <div key={i} onClick={() => d > 0 && d <= 31 && setActivePage('create')} className={`min-h-[160px] p-4 border-r border-b group relative hover:bg-emerald-50/20 transition-all cursor-pointer ${d < 1 || d > 31 ? 'bg-gray-50/10' : 'bg-white'}`}>
                 <div className="flex justify-between items-start">
                    <span className="text-xs font-black text-gray-300">{d > 0 && d <= 31 ? d : ''}</span>
                 </div>

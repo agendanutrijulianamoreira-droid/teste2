@@ -17,27 +17,27 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('');
-  const [rawInput, setRawInput] = useState('');
-  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   
-  // States para o Lab 5.0
+  // States para o Lab 5.0 (Inputs do Day 1 - Nicho & PPI)
   const [problem, setProblem] = useState(profile.promise90Days || '');
   const [pillars, setPillars] = useState(profile.uniqueMechanism || '');
+  const [enemy, setEnemy] = useState(profile.commonEnemy || '');
+  const [targetPains, setTargetPains] = useState(profile.targetAudience || '');
   const [goal, setGoal] = useState(profile.financialGoal || 15000);
 
   const steps = [
-    { id: 1, title: 'Posicionamento', icon: <Target />, desc: 'O Problema de 90 Dias e seus Pilares.' },
+    { id: 1, title: 'Nicho & PPI', icon: <Target />, desc: 'Definindo o Paciente Ideal (Day 1).' },
     { id: 2, title: 'Meta Financeira', icon: <DollarSign />, desc: 'Quanto você quer faturar nos próximos 30 dias?' },
-    { id: 3, title: 'Império Digital', icon: <Package />, desc: 'A Esteira Híbrida de Lucro.' },
+    { id: 3, title: 'Império Digital', icon: <Package />, desc: 'A Esteira Híbrida de Lucro (Day 2).' },
   ];
 
   const handleMagicRefine = async () => {
     setLoading(true);
     setLoadingText("Orquestrando seu Império...");
     try {
-       const result = await generateProductLadder({ ...profile, promise90Days: problem, uniqueMechanism: pillars, financialGoal: goal });
+       const result = await generateProductLadder({ ...profile, promise90Days: problem, uniqueMechanism: pillars, commonEnemy: enemy, financialGoal: goal });
        if (result) {
-          // Helper para encontrar produtos de forma resiliente (case insensitive ou por posição)
+          // Helper para encontrar produtos de forma resiliente
           const findProduct = (expectedType: string, fallbackIndex: number, defaultName: string, defaultPrice: number) => {
              const found = result.products.find((p: any) => 
                p.type?.toLowerCase().includes(expectedType.toLowerCase()) || 
@@ -50,6 +50,7 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
             uniqueMechanism: result.concept.mechanism,
             commonEnemy: result.concept.enemy,
             promise90Days: result.concept.promise,
+            targetAudience: targetPains, // Saving extended PPI info
             financialGoal: goal,
             productLadder: {
               lead_magnet: findProduct('lead_magnet', 0, 'Isca Digital', 0),
@@ -115,7 +116,7 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
                        <p className="text-lg font-black text-red-950 leading-tight">{profile.commonEnemy}</p>
                     </div>
                     <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100">
-                       <p className="text-[8px] font-black text-blue-600 uppercase mb-2">A Big Promise</p>
+                       <p className="text-[8px] font-black text-blue-600 uppercase mb-2">A Big Promise (90 Dias)</p>
                        <p className="text-lg font-black text-blue-950 leading-tight">{profile.promise90Days}</p>
                     </div>
                  </div>
@@ -153,7 +154,7 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
 
            {/* ESTEIRA DE PRODUTOS EDITÁVEL */}
            <div className="lg:col-span-2 space-y-6">
-              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] px-4 flex items-center gap-2"><Rocket size={14} className="text-emerald-500" /> Minha Esteira Lucrativa</h3>
+              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] px-4 flex items-center gap-2"><Rocket size={14} className="text-emerald-500" /> Minha Esteira Lucrativa (Day 2)</h3>
               
               {ladder && (
                  <div className="grid grid-cols-1 gap-6">
@@ -238,7 +239,7 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
       <div className="flex justify-between items-end">
          <div>
             <h2 className="text-4xl font-black text-gray-900 tracking-tight">Business Lab Architect</h2>
-            <p className="text-xl text-gray-500 mt-2 font-medium">Construa seu império passo a passo.</p>
+            <p className="text-xl text-gray-500 mt-2 font-medium">Implemente a Metodologia Completa (Day 1 a Day 19).</p>
          </div>
          <div className="flex items-center gap-2">
             {steps.map((s) => (
@@ -268,14 +269,24 @@ const BusinessLab: React.FC<BusinessLabProps> = ({ profile, updateProfile, setAc
             {step === 1 && (
                <div className="space-y-8 animate-in slide-in-from-right-8">
                   <div className="space-y-4">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4">Qual problema você resolve em 90 dias?</label>
-                     <textarea value={problem} onChange={e => setProblem(e.target.value)} placeholder="Ex: Mulheres que não conseguem engravidar devido a inflamação..." className="w-full p-8 bg-gray-50 border-none rounded-[32px] font-bold text-xl outline-none focus:ring-4 focus:ring-emerald-500/10 min-h-[140px] transition-all resize-none" />
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4 flex items-center gap-2"><Target size={12}/> Seu Nicho & PPI (Perfil Paciente Ideal)</label>
+                     <textarea value={targetPains} onChange={e => setTargetPains(e.target.value)} placeholder="Descreva seu PPI: Dores, Desejos, Frustrações e Obstáculos diários..." className="w-full p-8 bg-gray-50 border-none rounded-[32px] font-bold text-lg outline-none focus:ring-4 focus:ring-emerald-500/10 min-h-[140px] transition-all resize-none" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4">O Inimigo Comum (Day 1)</label>
+                        <input type="text" value={enemy} onChange={e => setEnemy(e.target.value)} placeholder="Ex: A Indústria da Dieta" className="w-full p-6 bg-gray-50 border-none rounded-[24px] font-bold text-lg outline-none focus:ring-4 focus:ring-emerald-500/10" />
+                     </div>
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4">Mecanismo Único (Seu Método)</label>
+                        <input type="text" value={pillars} onChange={e => setPillars(e.target.value)} placeholder="Ex: Ciclo Metabólico" className="w-full p-6 bg-gray-50 border-none rounded-[24px] font-bold text-lg outline-none focus:ring-4 focus:ring-emerald-500/10" />
+                     </div>
                   </div>
                   <div className="space-y-4">
-                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4">Quais os 3 pilares do seu método?</label>
-                     <textarea value={pillars} onChange={e => setPillars(e.target.value)} placeholder="Ex: Desinflamação Intestinal, Ciclo das Sementes, Sono..." className="w-full p-8 bg-gray-50 border-none rounded-[32px] font-bold text-xl outline-none focus:ring-4 focus:ring-emerald-500/10 min-h-[140px] transition-all resize-none" />
+                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-4">A Promessa de 90 Dias</label>
+                     <textarea value={problem} onChange={e => setProblem(e.target.value)} placeholder="Ex: Emagrecer 10kg sem passar fome em 3 meses" className="w-full p-6 bg-gray-50 border-none rounded-[24px] font-bold text-lg outline-none focus:ring-4 focus:ring-emerald-500/10 h-[100px] resize-none" />
                   </div>
-                  <button onClick={() => setStep(2)} disabled={!problem || !pillars} className="w-full py-6 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3">Próximo Passo <ArrowRight size={18} /></button>
+                  <button onClick={() => setStep(2)} disabled={!targetPains || !pillars} className="w-full py-6 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3">Próximo Passo <ArrowRight size={18} /></button>
                </div>
             )}
 

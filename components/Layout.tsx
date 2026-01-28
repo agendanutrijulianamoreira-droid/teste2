@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { 
   LayoutDashboard, Palette, Briefcase, Calendar, Filter, 
   Library, Trophy, Crown, MessageSquareQuote, BarChart3, 
-  ChevronRight, Sparkles, Target, Zap
+  ChevronRight, Sparkles, Target, Zap, PlusCircle
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -68,7 +67,21 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, setActivePage }) 
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.4em] mt-2">The High-Ticket System</p>
         </div>
         
-        <nav className="flex-1 p-6 space-y-10 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+          
+          {/* New Primary Creation Button */}
+          <button
+            onClick={() => setActivePage('create')}
+            className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 group ${
+              activePage === 'create'
+                ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-100'
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            }`}
+          >
+            <PlusCircle size={20} />
+            <span className="text-sm font-black tracking-tight">Criar com IA</span>
+          </button>
+
           {menuGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-3">
               <h3 className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{group.label}</h3>
@@ -110,7 +123,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, setActivePage }) 
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-[1500px] mx-auto p-12 lg:p-16">
+        {/* Remove max-width and padding from here to allow full-page components */}
+        <div>
           {children}
         </div>
       </main>

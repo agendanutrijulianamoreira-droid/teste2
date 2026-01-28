@@ -37,42 +37,34 @@ export const FORMAT_CONFIG: Record<PostFormat, { label: string; icon: React.Reac
   roteiro_stories: { label: 'Roteiro Stories', icon: <LayoutTemplate className="w-4 h-4" />, aspect: '9/16' },
 };
 
-export const ELITE_GALLERY = [
-  { url: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop' },
-  { url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop' },
-  { url: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=800&auto=format&fit=crop' },
-  { url: 'https://images.unsplash.com/photo-1505253758473-96b7015fcd40?q=80&w=800&auto=format&fit=crop' },
-  { url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=800&auto=format&fit=crop' },
-  { url: 'https://images.unsplash.com/photo-1543332164-6e82f3556082?q=80&w=800&auto=format&fit=crop' },
-];
-
 export interface EnhancedFunnelBlueprint extends FunnelBlueprint {
   questions: { id: string; label: string; placeholder: string }[];
 }
 
+// Updated Funnel Blueprints based on PDF content (Day 9, 16, 18)
 export const FUNNEL_BLUEPRINTS: EnhancedFunnelBlueprint[] = [
   // FASE 1: ATRAÇÃO E VALIDAÇÃO
   {
     id: 'f1',
     category: 'start',
-    title: 'Pesquisa de Audiência',
-    promise: 'Descubra a dor exata para vender.',
-    description: 'Roteiro de Stories com enquetes táticas para validar sua próxima oferta.',
+    title: 'Funil de Pesquisa (Day 16)',
+    promise: 'Entenda sua audiência e venda no final.',
+    description: 'Use uma pesquisa estratégica para segmentar leads e oferecer uma Sessão Estratégica gratuita para os mais qualificados.',
     icon: 'Search',
     color: 'from-amber-400 to-amber-600',
     pattern: ['pesquisa_audiencia'],
     outputFormat: 'roteiro_stories',
     questions: [
       { id: 'q1', label: 'Qual o tema principal da pesquisa?', placeholder: 'Ex: Dores no Emagrecimento' },
-      { id: 'q2', label: 'Qual dúvida você quer sanar?', placeholder: 'Ex: Se preferem mentorias em grupo ou individual' }
+      { id: 'q2', label: 'Qual o prêmio para quem responder?', placeholder: 'Ex: Sorteio de 5 Check-ups Virtuais' }
     ]
   },
   {
     id: 'f2',
     category: 'start',
-    title: 'Isca Digital (Lead Magnet)',
+    title: 'Funil de Presente (Lead Magnet)',
     promise: 'Construa sua lista de potenciais clientes.',
-    description: 'Post focado em troca: conteúdo rico por contato no Direct.',
+    description: 'Post focado em troca: conteúdo rico por contato no Direct. Troca ética de valor.',
     icon: 'Magnet',
     color: 'from-blue-400 to-blue-600',
     pattern: ['conexao_valores', 'conversao_direta'],
@@ -82,16 +74,17 @@ export const FUNNEL_BLUEPRINTS: EnhancedFunnelBlueprint[] = [
     ]
   },
 
-  // FASE 2: CONVERSÃO DIÁRIA (FUNIS PRINCIPAIS DO MÉTODO)
+  // FASE 2: CONVERSÃO DIÁRIA
   {
     id: 'f3',
     category: 'sell',
-    title: 'Chamada Direta (The Money Post)',
+    title: 'Conversão Direta (The Money Post)',
     promise: 'Filtre os Inconformados e venda agora.',
     description: 'Post curto, visceral e agressivo focado no nível máximo de consciência. Identifica o problema e oferece a solução imediata.',
     icon: 'Target',
     color: 'from-green-600 to-emerald-800',
     pattern: ['conversao_direta'],
+    outputFormat: 'carousel',
     questions: [
       { id: 'q1', label: 'Qual a dor latente que vamos atacar?', placeholder: 'Ex: O efeito sanfona que nunca acaba' },
       { id: 'q2', label: 'Qual a palavra-chave de ação?', placeholder: 'Ex: Comente "METABOLISMO"' }
@@ -100,75 +93,48 @@ export const FUNNEL_BLUEPRINTS: EnhancedFunnelBlueprint[] = [
   {
     id: 'f4',
     category: 'sell',
-    title: 'Stories Consultivo',
-    promise: 'Venda através de diagnóstico.',
-    description: 'Sequência de Stories com Caixinha de Perguntas. Não é para bater papo, é para diagnosticar e vender no Direct.',
+    title: 'Funil de Aplicação (Day 9)',
+    promise: 'Inverta a polaridade: O cliente se vende.',
+    description: 'Roteiro para levar interessados a preencherem um formulário para tentar uma vaga na sua Mentoria Premium.',
     icon: 'MessageSquare',
     color: 'from-purple-400 to-purple-600',
     pattern: ['stories_consultivo'],
     outputFormat: 'roteiro_stories',
     questions: [
-      { id: 'q1', label: 'Qual o tema da caixinha?', placeholder: 'Ex: Compulsão por Doces' },
-      { id: 'q2', label: 'Qual o objetivo final?', placeholder: 'Ex: Vender Protocolo X no Direct' }
+      { id: 'q1', label: 'Qual a promessa da Mentoria?', placeholder: 'Ex: Emagrecimento Definitivo em 90 dias' },
+      { id: 'q2', label: 'Qual o perfil que você NÃO quer?', placeholder: 'Ex: Quem procura pílula mágica' }
     ]
   },
-  {
-    id: 'f6',
-    category: 'sell',
-    title: 'Mini Treinamento',
-    promise: 'Autoridade Imediata.',
-    description: 'Carrossel educativo profundo (Autoridade Clínica) que ensina o "O Quê" e vende o "Como".',
-    icon: 'Microscope',
-    color: 'from-indigo-400 to-indigo-600',
-    pattern: ['autoridade_clinica', 'autoridade_clinica', 'conversao_direta'],
-    questions: [
-      { id: 'q1', label: 'Qual o conceito técnico vamos ensinar?', placeholder: 'Ex: O ciclo do cortisol no sono' },
-      { id: 'q2', label: 'Qual a pequena vitória o cliente terá?', placeholder: 'Ex: Entender por que acorda cansada' }
-    ]
-  },
-  {
-    id: 'f_myth',
-    category: 'sell',
-    title: 'Mito vs Verdade',
-    promise: 'Posicione seu Mecanismo Único.',
-    description: 'Quebre uma crença do mercado tradicional e apresente seu método como a nova solução.',
-    icon: 'Scale',
-    color: 'from-orange-400 to-red-500',
-    pattern: ['mito_verdade', 'conversao_direta'],
-    questions: [
-      { id: 'q1', label: 'Qual mito vamos destruir?', placeholder: 'Ex: Que precisa comer de 3 em 3 horas' },
-      { id: 'q2', label: 'Qual a sua verdade (Mecanismo)?', placeholder: 'Ex: Jejum Estratégico (Ciclo Vital)' }
-    ]
-  },
-
+  
   // FASE 3: CAIXA RÁPIDO E ESCALA
   {
     id: 'f7',
     category: 'caixa',
-    title: 'Ativação de Base (Recuperação)',
+    title: 'Oferta Especial Interna (Day 19)',
     promise: 'Faturamento imediato com ex-clientes.',
-    description: 'Scripts de WhatsApp para reativar pessoas que já conhecem seu trabalho.',
+    description: 'Scripts de WhatsApp para reativar base de pacientes antigos com uma oferta exclusiva e por tempo limitado.',
     icon: 'DollarSign',
     color: 'from-emerald-400 to-emerald-600',
     outputFormat: 'script_whatsapp',
     pattern: ['recuperacao_vendas'],
     questions: [
-      { id: 'q1', label: 'Qual a oferta especial para hoje?', placeholder: 'Ex: Agenda extra para Retorno' },
-      { id: 'q2', label: 'Qual o bônus de urgência?', placeholder: 'Ex: Guia de Receitas Grátis' }
+      { id: 'q1', label: 'Qual a condição especial?', placeholder: 'Ex: Preço antigo antes do reajuste' },
+      { id: 'q2', label: 'Qual o bônus de urgência?', placeholder: 'Ex: 1 mês extra de acompanhamento' }
     ]
   },
   {
-    id: 'f9',
-    category: 'scale',
-    title: 'Reunião Temática',
-    promise: 'Venda em massa em grupo.',
-    description: 'Funil de convite para evento ao vivo (Zoom/Live). Ótimo para vender High-Ticket.',
-    icon: 'TrendingUp',
-    color: 'from-blue-600 to-indigo-800',
-    pattern: ['conexao_valores', 'conversao_direta'],
+    id: 'f_referral',
+    category: 'caixa',
+    title: 'Máquina de Indicações (Day 18)',
+    promise: 'Multiplique seus pacientes atuais.',
+    description: 'Estratégia de NPS e recompensa para incentivar pacientes felizes a trazerem amigos.',
+    icon: 'Users',
+    color: 'from-pink-500 to-rose-600',
+    pattern: ['conexao_valores'],
+    outputFormat: 'script_whatsapp',
     questions: [
-      { id: 'q1', label: 'Qual o tema da reunião?', placeholder: 'Ex: O Mapa da Barriga Zerada' },
-      { id: 'q2', label: 'Data e Hora?', placeholder: 'Ex: Quinta às 20h' }
+      { id: 'q1', label: 'Qual a recompensa para quem indica?', placeholder: 'Ex: Kit de suplementos ou desconto' },
+      { id: 'q2', label: 'Qual a vantagem para o indicado?', placeholder: 'Ex: Primeira consulta com valor especial' }
     ]
   }
 ];

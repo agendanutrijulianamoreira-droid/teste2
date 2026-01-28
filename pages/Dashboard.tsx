@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Zap, CheckCircle2, Target, ArrowRight, Crown, Sparkles, DollarSign, 
@@ -176,10 +175,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                 price: String(profile.productLadder.tripwire.price),
                 pillar: profile.uniqueMechanism,
                 gamification: true,
+                // FIX: Changed structure to challengeStructure
                 launchStrategy: challengeStructure.launch_strategy.map((ls: any) => ({
                     day: String(ls.day),
                     script: ls.script
                 })),
+                // FIX: Changed structure to challengeStructure
                 dailyMissions: challengeStructure.daily_missions.map((dm: any) => ({
                     day: dm.day,
                     theme: dm.theme,
@@ -206,7 +207,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div id="war-room-container" className="space-y-16 animate-in fade-in duration-1000 pb-32">
+    <div id="war-room-container" className="max-w-[1500px] mx-auto p-12 lg:p-16 space-y-16 animate-in fade-in duration-1000 pb-32">
       
       {/* OVERLAY DE CARREGAMENTO PROGRESSIVO LUXURY */}
       {isGeneratingMonth && (
